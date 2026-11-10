@@ -1,0 +1,49 @@
+name: SkyWatch integration
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: testforge
+      - uses: actions/checkout@v4
+        with:
+          repository: owenliu11/skywatch
+          ref: 413a8237fdcf9afeaa9e495f9e6e96c720bcf18f
+          path: skywatch
+          token: ${{ secrets.SKYWATCH_READ_TOKEN || github.token }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install test dependencies
+        working-directory: testforge
+        run: python -m pip install .
+      - name: Start target
+        working-directory: testforge
+        env:
+          SKYWATCH_DIR: ${{ github.workspace }}/skywatch
+        run: docker compose -p tf_skywatch -f targets/skywatch/compose.yaml up --build -d --wait
+      - name: Run integration test
+        working-directory: testforge
+        run: python -m pytest tests/skywatch -v --junitxml=reports/skywatch/junit.xml
+      - name: Collect logs
+        if: always()
+        working-directory: testforge
+        run: |
+          mkdir -p reports/skywatch
+          docker compose -p tf_skywatch -f targets/skywatch/compose.yaml logs --no-color > reports/skywatch/compose.log || true
+      - name: Save evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: skywatch-evidence
+          path: testforge/reports/skywatch/
+      - name: Tear down
+        if: always()
+        working-directory: testforge
+        run: docker compose -p tf_skywatch -f targets/skywatch/compose.yaml down -v
