@@ -4,7 +4,7 @@
 - AgentForge target: `84b1c95aaa98c5855ab627aff141cdf12cac8da4`, selected instead of the guide's older `0e41dcc` because it adds a dedicated TestForge target contract and isolated stack.
 - SkyWatch requires Docker, a TimescaleDB container, Redis, a synthetic provider, and the API. The test uses ports 18000 and 18080 and no real provider credentials.
 - The SkyWatch starter scenario passed locally and in GitHub Actions, with evidence saved in run 42892721167. The AgentForge happy-path spike passed locally.
-- Licensing for TestForge and redistribution of the target repositories has not yet been decided. No license is implied by this document.
+- TestForge uses the MIT license. SkyWatch and AgentForge are separate repositories; consult their own terms before redistributing them.
 - M2 has passed its local core, API, isolated integration, timestamp regression, and dependency-outage checks. The SkyWatch fix is merged and tagged, and TestForge pins its release commit; see [risk traceability](m2-risk-traceability.md).
 - M3 adds isolated WebSocket snapshot, delta, reconnect and eviction checks, plus real-browser aircraft details, empty view, and disconnect/recovery journeys. Browser tests stub map tiles and retain traces and screenshots on failure.
 - M4 adds a one-command Phase 1 run, populated anomaly filter coverage, skip/empty-suite detection, and a reproducible intentional regression demonstration; see [M4 regression evidence](m4-regression-demo.md).
@@ -13,3 +13,11 @@
 ## Spike: shared needs
 
 Both targets need configurable HTTP endpoints, readiness checks, deadline-based polling with useful last-state diagnostics, isolated Compose projects, and saved test results and logs. AgentForge additionally needs run-specific event and report checks, a worker, and access to Docker for its short-lived test sandbox. SkyWatch needs a synthetic provider and ingestion-specific checks. Keep those target-specific behaviors out of the shared core. The AgentForge fixture deliberately contains a failing test: the agent run is successful when it reports that failure accurately.
+
+## M6 release checklist
+
+- Follow the README from a clean clone using the pinned target revisions and independently installed dependencies.
+- Check the documentation, demo commands, reports, and limitations against the release candidate.
+- Run the regression demonstration and both target suites; retain evidence.
+- Require five consecutive clean CI runs on the final unchanged two-target candidate with no retries. Five passes do not prove that tests are never flaky.
+- Confirm the selected license and target-repository terms, then publish the reviewed code.
