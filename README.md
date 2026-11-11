@@ -43,6 +43,12 @@ bash scripts/run-skywatch-isolated.sh tests/skywatch/ws tests/skywatch/ui
 
 The UI uses loopback port 15173. Set `TF_SKYWATCH_UI_PORT`, `TF_SKYWATCH_API_PORT`, and `TF_SKYWATCH_FIXTURE_PORT` to distinct free ports for concurrent runs. When using an installed Chrome on macOS instead of Playwright's Chromium, set `TESTFORGE_BROWSER_CHANNEL=chrome`. See [M3 traceability](docs/m3-realtime-traceability.md) for scenario details.
 
+## M4 Phase 1 and regression demo
+
+With `SKYWATCH_DIR` pointing to the pinned SkyWatch checkout and Chromium installed, run `bash scripts/run-phase-one.sh`. This runs the core, API, isolated SkyWatch scenarios, and the controlled regression demo; it exits nonzero for failures, unexpected skips, or an empty suite. Reports are written under `reports/skywatch/phase-one/`.
+
+Run only the controlled demonstration with `bash scripts/demo-regression.sh`. It changes a disposable local clone, confirms WS-02 fails specifically because the leave event is missing, and then restores the source and requires a pass. See [the regression guide](docs/m4-regression-demo.md) for the evidence and remaining reproducibility limits.
+
 ## AgentForge spike
 
 Use an AgentForge checkout at `84b1c95aaa98c5855ab627aff141cdf12cac8da4`, Docker Compose, and the Python environment above. The worker accesses the Docker socket to run the fixture's tests in a disposable container. Ports 18010 and 18011 must be available. Set `AGENTFORGE_DIR` to the absolute checkout path, with no trailing slash:

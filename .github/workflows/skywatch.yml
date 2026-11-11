@@ -7,6 +7,7 @@ on:
 jobs:
   integration:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,7 +34,9 @@ jobs:
         run: docker compose -p tf_skywatch -f targets/skywatch/compose.yaml up --build -d --wait
       - name: Run integration test
         working-directory: testforge
-        run: python -m pytest tests/core tests/skywatch/api tests/skywatch/integration/test_ingestion.py -v --junitxml=reports/skywatch/junit.xml
+        run: |
+          python -m pytest tests/core tests/skywatch/api tests/skywatch/integration/test_ingestion.py -v --junitxml=reports/skywatch/junit.xml
+          python scripts/verify-junit.py reports/skywatch/junit.xml
       - name: Collect logs
         if: always()
         working-directory: testforge
@@ -50,6 +53,12 @@ jobs:
           SKYWATCH_DIR: ${{ github.workspace }}/skywatch
           TESTFORGE_PYTHON: python
         run: bash scripts/run-skywatch-isolated.sh
+      - name: Demonstrate and verify intentional leave-event regression
+        working-directory: testforge
+        env:
+          SKYWATCH_DIR: ${{ github.workspace }}/skywatch
+          TESTFORGE_PYTHON: python
+        run: bash scripts/demo-regression.sh
       - name: Save evidence
         if: always()
         uses: actions/upload-artifact@v4

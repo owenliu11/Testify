@@ -5,7 +5,7 @@ Each integration case must run in a fresh Compose project or a separately reset 
 | ID | Risk | Evidence |
 | --- | --- | --- |
 | CORE-01–11 | Bad configuration, leaked headers, client failures, unbounded waits, malformed output | `tests/core/test_core.py`, no services required |
-| API-01–09 | API health, response shape, bbox and limit validation, missing aircraft, nullable values, track boundaries/truncation, and anomaly response | `tests/skywatch/api/test_contracts.py` |
+| API-01–10 | API health, response shape, bbox and limit validation, missing aircraft, nullable values, track boundaries/truncation, and populated anomaly filters | `tests/skywatch/api/test_contracts.py` and `tests/skywatch/integration/test_anomaly_filters.py` |
 | INT-01 | Synthetic provider observation fails to reach live and committed history | `tests/skywatch/integration/test_ingestion.py` |
 | INT-02 | Duplicate observations roll back live state or duplicate committed history | `test_int_02_duplicate_does_not_duplicate_history_or_rollback` |
 | INT-03 | Empty provider results fail or aircraft fail to expire | `test_int_03_empty_cycles_and_eviction` covers null and empty lists |
@@ -22,4 +22,4 @@ Against SkyWatch `413a8237fdcf9afeaa9e495f9e6e96c720bcf18f`, INT-07 timed out wa
 
 The fix validates row timestamps and snapshot timestamps at parsing/model boundaries. An invalid row is rejected without discarding valid rows; an invalid snapshot is returned as a failed provider result so the scheduler can retry. The fix was merged and tagged in SkyWatch `v0.4.1`; TestForge pins release commit `e83e675a66fa7cf8e00a1b28397be1f08a662832`.
 
-The outage checks verify health reporting and dependency reconnection. They do not prove lossless ingestion: SkyWatch can drop historical writes under queue pressure, and restarting the API clears its live in-memory state. Populated anomaly filtering remains to be verified.
+The outage checks verify health reporting and dependency reconnection. They do not prove lossless ingestion: SkyWatch can drop historical writes under queue pressure, and restarting the API clears its live in-memory state.
