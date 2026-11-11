@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: skywatch
       POSTGRES_DB: skywatch
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U skywatch -d skywatch"]
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U skywatch -d skywatch"]
       interval: 3s
       timeout: 3s
       retries: 40
@@ -21,11 +21,14 @@ services:
 
   provider-fixture:
     image: python:3.12-slim
+    stop_grace_period: 1s
     command: ["python", "-u", "/fixture/server.py"]
+    environment:
+      FIXTURE_SCENARIO: ${FIXTURE_SCENARIO:-normal}
     volumes:
       - ../../fixtures/skywatch:/fixture:ro
     ports:
-      - "18080:8080"
+      - "127.0.0.1:${TF_SKYWATCH_FIXTURE_PORT:-18080}:8080"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:8080/requests')"]
       interval: 2s
@@ -36,6 +39,11 @@ services:
     build:
       context: ${SKYWATCH_DIR:-../../../skywatch}/backend
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import json,urllib.request as u; assert json.load(u.urlopen('http://127.0.0.1:8000/health', timeout=2))['status'] == 'ok'"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
     environment:
       DATABASE_URL: postgresql://skywatch:skywatch@db:5432/skywatch
       REDIS_URL: redis://redis:6379/0
@@ -45,9 +53,9 @@ services:
       OPENSKY_CLIENT_SECRET: dummy
       OPENSKY_TOKEN_URL: http://provider-fixture:8080/token
       OPENSKY_STATES_URL: http://provider-fixture:8080/states/all
-      SKYWATCH_TEST_MODE: "true"
+      SKYWATCH_TEST_MODE: ${SKYWATCH_TEST_MODE:-true}
     ports:
-      - "18000:8000"
+      - "127.0.0.1:${TF_SKYWATCH_API_PORT:-18000}:8000"
     depends_on:
       db:
         condition: service_healthy

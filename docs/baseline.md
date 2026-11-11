@@ -1,7 +1,12 @@
 # Baseline and milestone status
 
-- SkyWatch target: `413a8237fdcf9afeaa9e495f9e6e96c720bcf18f`.
-- AgentForge target from the build guide: `0e41dcc`; the local checkout was at `84b1c95` when inspected. No AgentForge tests are configured yet.
+- Original SkyWatch target: `413a8237fdcf9afeaa9e495f9e6e96c720bcf18f`; the M2 candidate is `8182c2628a154f624df7b9c39366d5e80987626d`, published on `codex/m2-timestamp-fixes` and not yet merged.
+- AgentForge target: `84b1c95aaa98c5855ab627aff141cdf12cac8da4`, selected instead of the guide's older `0e41dcc` because it adds a dedicated TestForge target contract and isolated stack.
 - SkyWatch requires Docker, a TimescaleDB container, Redis, a synthetic provider, and the API. The test uses ports 18000 and 18080 and no real provider credentials.
-- The starter integration scenario has passed locally. M1 still requires a successful fresh-clone CI run with saved evidence; CI configuration alone does not establish that gate.
+- The SkyWatch starter scenario passed locally and in GitHub Actions, with evidence saved in run 42892721167. The AgentForge happy-path spike passed locally; it is not yet included in CI.
 - Licensing for TestForge and redistribution of the target repositories has not yet been decided. No license is implied by this document.
+- M2 has passed its local core, API, isolated integration, timestamp regression, and dependency-outage checks. The SkyWatch fix is on a separate branch and the updated TestForge CI workflow pins it. The candidate still needs CI verification and review; see [risk traceability](m2-risk-traceability.md).
+
+## Spike: shared needs
+
+Both targets need configurable HTTP endpoints, readiness checks, deadline-based polling with useful last-state diagnostics, isolated Compose projects, and saved test results and logs. AgentForge additionally needs run-specific event and report checks, a worker, and access to Docker for its short-lived test sandbox. SkyWatch needs a synthetic provider and ingestion-specific checks. Keep those target-specific behaviors out of the shared core. The AgentForge fixture deliberately contains a failing test: the agent run is successful when it reports that failure accurately.

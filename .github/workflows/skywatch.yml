@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: owenliu11/skywatch
-          ref: 413a8237fdcf9afeaa9e495f9e6e96c720bcf18f
+          ref: 8182c2628a154f624df7b9c39366d5e80987626d
           path: skywatch
           token: ${{ secrets.SKYWATCH_READ_TOKEN || github.token }}
       - uses: actions/setup-python@v5
@@ -30,20 +30,26 @@ jobs:
         run: docker compose -p tf_skywatch -f targets/skywatch/compose.yaml up --build -d --wait
       - name: Run integration test
         working-directory: testforge
-        run: python -m pytest tests/skywatch -v --junitxml=reports/skywatch/junit.xml
+        run: python -m pytest tests/core tests/skywatch/api tests/skywatch/integration/test_ingestion.py -v --junitxml=reports/skywatch/junit.xml
       - name: Collect logs
         if: always()
         working-directory: testforge
         run: |
           mkdir -p reports/skywatch
           docker compose -p tf_skywatch -f targets/skywatch/compose.yaml logs --no-color > reports/skywatch/compose.log || true
+      - name: Tear down starter stack
+        if: always()
+        working-directory: testforge
+        run: docker compose -p tf_skywatch -f targets/skywatch/compose.yaml down -v
+      - name: Run isolated risk scenarios
+        working-directory: testforge
+        env:
+          SKYWATCH_DIR: ${{ github.workspace }}/skywatch
+          TESTFORGE_PYTHON: python
+        run: bash scripts/run-skywatch-isolated.sh
       - name: Save evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: skywatch-evidence
           path: testforge/reports/skywatch/
-      - name: Tear down
-        if: always()
-        working-directory: testforge
-        run: docker compose -p tf_skywatch -f targets/skywatch/compose.yaml down -v
