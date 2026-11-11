@@ -31,6 +31,18 @@ bash scripts/run-skywatch-isolated.sh
 
 The script starts a fresh, dedicated Compose project per scenario, saves JUnit results and logs under `reports/skywatch/isolated/`, and removes each test database afterward. See [M2 risk traceability](docs/m2-risk-traceability.md) for known coverage.
 
+## M3 real-time and browser tests
+
+Install the browser once with `.venv/bin/python -m playwright install chromium`. The isolated runner also runs the WebSocket scenarios and three browser journeys against a built Vite preview frontend. Each scenario uses fresh application state. Browser screenshots and traces are retained on failure under the run's `reports/skywatch/isolated/` directory. Map tiles are replaced by a local blank fixture; the application, API, and WebSocket remain real.
+
+To run only M3 checks:
+
+```sh
+bash scripts/run-skywatch-isolated.sh tests/skywatch/ws tests/skywatch/ui
+```
+
+The UI uses loopback port 15173. Set `TF_SKYWATCH_UI_PORT`, `TF_SKYWATCH_API_PORT`, and `TF_SKYWATCH_FIXTURE_PORT` to distinct free ports for concurrent runs. When using an installed Chrome on macOS instead of Playwright's Chromium, set `TESTFORGE_BROWSER_CHANNEL=chrome`. See [M3 traceability](docs/m3-realtime-traceability.md) for scenario details.
+
 ## AgentForge spike
 
 Use an AgentForge checkout at `84b1c95aaa98c5855ab627aff141cdf12cac8da4`, Docker Compose, and the Python environment above. The worker accesses the Docker socket to run the fixture's tests in a disposable container. Ports 18010 and 18011 must be available. Set `AGENTFORGE_DIR` to the absolute checkout path, with no trailing slash:

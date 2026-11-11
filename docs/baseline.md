@@ -6,6 +6,7 @@
 - The SkyWatch starter scenario passed locally and in GitHub Actions, with evidence saved in run 42892721167. The AgentForge happy-path spike passed locally; it is not yet included in CI.
 - Licensing for TestForge and redistribution of the target repositories has not yet been decided. No license is implied by this document.
 - M2 has passed its local core, API, isolated integration, timestamp regression, and dependency-outage checks. The SkyWatch fix is merged and tagged, and TestForge pins its release commit; see [risk traceability](m2-risk-traceability.md).
+- M3 adds isolated WebSocket snapshot, delta, reconnect and eviction checks, plus real-browser aircraft details, empty view, and disconnect/recovery journeys. Browser tests stub map tiles and retain traces and screenshots on failure.
 
 ## Spike: shared needs
 

@@ -12,7 +12,7 @@ LOCK = threading.Lock()
 SCENARIO = os.getenv("FIXTURE_SCENARIO", "normal")
 CALLS = 0
 FIXED_TIME = 0
-SCENARIOS = {"normal", "nullable", "duplicate", "older", "empty_null", "empty_list", "mixed", "error", "invalid_json", "unauthorized_once", "bad_contact", "bad_snapshot", "old"}
+SCENARIOS = {"normal", "stationary", "moved", "outside", "nullable", "duplicate", "older", "empty_null", "empty_list", "mixed", "error", "invalid_json", "unauthorized_once", "bad_contact", "bad_snapshot", "old"}
 
 
 def state_row(now: int) -> list[object]:
@@ -77,6 +77,12 @@ class Handler(BaseHTTPRequestHandler):
             now = int(time.time())
             observed = fixed_time if scenario == "duplicate" else now - 58 if scenario == "old" else now - 10 if scenario == "older" else now
             row = state_row(observed)
+            if scenario in {"stationary", "moved", "outside"}:
+                row[9] = 0.0
+            if scenario == "moved":
+                row[5] = -122.2
+            if scenario == "outside":
+                row[5] = -120.0
             if scenario == "older":
                 row[9] = 99.0
             if scenario == "nullable":
