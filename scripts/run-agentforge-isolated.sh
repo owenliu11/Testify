@@ -51,4 +51,5 @@ while IFS= read -r node; do
   "${COMPOSE[@]}" logs --no-color > "$REPORT_DIR/$index.log" 2>&1 || true
   "${COMPOSE[@]}" down -v --remove-orphans || result=1
 done < "$NODES"
+echo "AgentForge reports: $REPORT_DIR"
 exit "$result"
