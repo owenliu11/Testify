@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: owenliu11/skywatch
-          ref: 8182c2628a154f624df7b9c39366d5e80987626d
+          ref: e83e675a66fa7cf8e00a1b28397be1f08a662832
           path: skywatch
           token: ${{ secrets.SKYWATCH_READ_TOKEN || github.token }}
       - uses: actions/setup-python@v5

@@ -1,5 +1,5 @@
 [targets.skywatch]
-revision = "8182c2628a154f624df7b9c39366d5e80987626d"
+revision = "e83e675a66fa7cf8e00a1b28397be1f08a662832"
 api_base_url = "http://127.0.0.1:18000"
 ws_url = "ws://127.0.0.1:18000/ws/live"
 request_timeout = 5

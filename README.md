@@ -4,7 +4,7 @@ TestForge exercises real application integrations with local, synthetic dependen
 
 ## Run the SkyWatch starter scenario
 
-Requirements: Python 3.12, Docker Compose, and a SkyWatch checkout at commit `8182c2628a154f624df7b9c39366d5e80987626d` on branch `codex/m2-timestamp-fixes`. Set `SKYWATCH_DIR` to its absolute path.
+Requirements: Python 3.12, Docker Compose, and a SkyWatch checkout at commit `e83e675a66fa7cf8e00a1b28397be1f08a662832` (release `v0.4.1`). Set `SKYWATCH_DIR` to its absolute path.
 
 ```sh
 python3.12 -m venv .venv
@@ -16,20 +16,20 @@ docker compose -p tf_skywatch -f targets/skywatch/compose.yaml down -v
 
 The last command removes this Compose project's test database and volumes. Ports 18000 and 18080 must be available. The fixture uses invented data and dummy credentials. Reports are local and ignored by Git.
 
-The CI workflow pins the same candidate and saves the JUnit report. If SkyWatch is private, configure a `SKYWATCH_READ_TOKEN` repository secret with read access to it.
+The CI workflow pins the same release commit and saves the JUnit report. If SkyWatch is private, configure a `SKYWATCH_READ_TOKEN` repository secret with read access to it.
 
 See [baseline](docs/baseline.md) for current milestone status and limitations.
 
 ## M2 isolated scenarios
 
-The timestamp regressions require the proposed SkyWatch fix on branch `codex/m2-timestamp-fixes` (local commit `8182c2628a154f624df7b9c39366d5e80987626d`). Once that revision is available locally, point `SKYWATCH_DIR` to its checkout and run:
+The timestamp regressions require SkyWatch `v0.4.1`. Point `SKYWATCH_DIR` to a checkout of that release and run:
 
 ```sh
-export SKYWATCH_DIR="$PWD/.worktrees/skywatch-m2"
+export SKYWATCH_DIR="$HOME/skywatch"
 bash scripts/run-skywatch-isolated.sh
 ```
 
-The script starts a fresh, dedicated Compose project per scenario, saves JUnit results and logs under `reports/skywatch/isolated/`, and removes each test database afterward. See [M2 risk traceability](docs/m2-risk-traceability.md) for known coverage and remaining release work. The updated local workflow includes these scenarios; the workflow currently on GitHub still runs the original starter test.
+The script starts a fresh, dedicated Compose project per scenario, saves JUnit results and logs under `reports/skywatch/isolated/`, and removes each test database afterward. See [M2 risk traceability](docs/m2-risk-traceability.md) for known coverage.
 
 ## AgentForge spike
 
