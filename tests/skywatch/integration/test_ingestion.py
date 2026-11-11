@@ -1,28 +1,13 @@
 import os
 import time
-from collections.abc import Callable
 from datetime import datetime
 
 import httpx
+from testforge.wait import wait_for
 
 API = os.environ.get("API_BASE_URL", "http://127.0.0.1:18000")
 FIXTURE = os.environ.get("FIXTURE_URL", "http://127.0.0.1:18080")
 BBOX = "37,-123,38.5,-121.5"
-
-
-def wait_for(check: Callable[[], object], what: str, deadline_s: float = 45) -> object:
-    deadline = time.monotonic() + deadline_s
-    last = None
-    while time.monotonic() < deadline:
-        try:
-            last = check()
-        except httpx.HTTPError as exc:
-            last = exc
-        else:
-            if last:
-                return last
-        time.sleep(0.25)
-    raise AssertionError(f"Timed out waiting for {what}. Last result: {last!r}")
 
 
 def states_requests() -> int:
@@ -34,6 +19,7 @@ def test_int_01_row_reaches_live_and_history() -> None:
     wait_for(
         lambda: httpx.get(f"{API}/health", timeout=5).json().get("status") == "ok",
         "API health status ok",
+        retry_on=(httpx.HTTPError,),
     )
     before = states_requests()
     previous = httpx.get(f"{API}/aircraft/abc123/track", timeout=5).json()

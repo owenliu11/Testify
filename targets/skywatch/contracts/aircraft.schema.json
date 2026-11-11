@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["as_of", "count", "truncated", "aircraft"],
+  "properties": {
+    "as_of": {"type": "string"},
+    "count": {"type": "integer", "minimum": 0},
+    "truncated": {"type": "boolean"},
+    "aircraft": {"type": "array", "items": {"type": "object", "required": ["icao24"], "properties": {"icao24": {"type": "string"}}}}
+  }
+}
