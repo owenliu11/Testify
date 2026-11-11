@@ -2,7 +2,7 @@
 
 ## Boundaries
 
-TestForge uses pytest as its runner; `src/testforge/` contains reusable configuration validation, HTTP-client, and bounded-polling helpers. Target-specific behavior remains in `tests/skywatch/`, `tests/agentforge/`, the Compose files under `targets/`, and the synthetic SkyWatch fixture under `fixtures/`. The shell runners arrange each scenario's stack and evidence; they do not require either target's production deployment.
+TestForge uses pytest as its runner; `src/testforge/` contains the [version 1 configuration contract](configuration.md) and its loader, the environment exported to tests, and HTTP-client and bounded-polling helpers. Target-specific behavior remains in `tests/skywatch/`, `tests/agentforge/`, the Compose files under `targets/`, and the synthetic SkyWatch fixture under `fixtures/`. The shell runners arrange each scenario's stack and evidence; they do not require either target's production deployment.
 
 SkyWatch runs its actual API against a synthetic provider, a dedicated TimescaleDB instance, and Redis. UI scenarios build the target frontend and use Playwright; their map tiles are locally substituted. AgentForge runs its actual API and worker against a dedicated PostgreSQL database and mock effects API. Its worker talks to the host Docker daemon to launch a disposable sandbox for its fixture repository. Each target uses its own Compose project and ports; the CI combined job starts both at once and runs one representative test for each.
 

@@ -6,11 +6,17 @@ from pathlib import Path
 
 import httpx
 import pytest
-from jsonschema import validate
+from jsonschema import ValidationError, validate
 from testforge.wait import wait_for
 
 API = os.getenv("API_BASE_URL", "http://127.0.0.1:18000")
 FIXTURE = os.getenv("FIXTURE_URL", "http://127.0.0.1:18080")
+SCHEMA = Path(__file__).parents[3] / "targets/skywatch/contracts/aircraft.schema.json"
+
+
+def test_api_00_schema_rejects_malformed_response():
+    with pytest.raises(ValidationError):
+        validate({"as_of": "now", "count": "one", "truncated": False, "aircraft": []}, json.loads(SCHEMA.read_text()))
 
 
 def test_api_01_health_body():
@@ -24,8 +30,7 @@ def test_api_02_collection_contract():
     response = httpx.get(f"{API}/aircraft", params={"bbox": "37,-123,38.5,-121.5"}, timeout=5)
     response.raise_for_status()
     body = response.json()
-    schema = json.loads((Path(__file__).parents[3] / "targets/skywatch/contracts/aircraft.schema.json").read_text())
-    validate(body, schema)
+    validate(body, json.loads(SCHEMA.read_text()))
     assert isinstance(body["aircraft"], list) and isinstance(body["count"], int)
     assert isinstance(body["truncated"], bool) and isinstance(body["as_of"], str)
     assert body["count"] == len(body["aircraft"])
