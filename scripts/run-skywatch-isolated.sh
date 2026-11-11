@@ -35,6 +35,7 @@ result=0
 index=0
 while IFS= read -r node; do
   index=$((index + 1))
+  export TESTFORGE_EVIDENCE_DIR="$REPORT_DIR/evidence/$index"
   export SKYWATCH_TEST_MODE=true FIXTURE_SCENARIO=normal
   COMPOSE=(docker compose -p "$PROJECT" -f targets/skywatch/compose.yaml)
   PYTEST_ARGS=(--screenshot=only-on-failure --tracing=retain-on-failure --output="$REPORT_DIR/browser/$index")
@@ -51,7 +52,10 @@ while IFS= read -r node; do
     result=1
   elif ! "$PYTHON" -m pytest "$node" -v "${PYTEST_ARGS[@]}" --junitxml="$REPORT_DIR/$index.xml"; then
     result=1
+  elif ! "$PYTHON" scripts/verify-junit.py "$REPORT_DIR/$index.xml"; then
+    result=1
   fi
+  "$PYTHON" scripts/capture-skywatch.py || true
   "${COMPOSE[@]}" logs --no-color > "$REPORT_DIR/$index.log" 2>&1 || true
   "${COMPOSE[@]}" down -v --remove-orphans || result=1
 done < "$NODES"

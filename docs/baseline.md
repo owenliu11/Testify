@@ -7,6 +7,7 @@
 - Licensing for TestForge and redistribution of the target repositories has not yet been decided. No license is implied by this document.
 - M2 has passed its local core, API, isolated integration, timestamp regression, and dependency-outage checks. The SkyWatch fix is merged and tagged, and TestForge pins its release commit; see [risk traceability](m2-risk-traceability.md).
 - M3 adds isolated WebSocket snapshot, delta, reconnect and eviction checks, plus real-browser aircraft details, empty view, and disconnect/recovery journeys. Browser tests stub map tiles and retain traces and screenshots on failure.
+- M4 adds a one-command Phase 1 run, populated anomaly filter coverage, skip/empty-suite detection, and a reproducible intentional regression demonstration; see [M4 regression evidence](m4-regression-demo.md).
 
 ## Spike: shared needs
 

@@ -3,6 +3,7 @@
 import json
 import os
 import time
+from pathlib import Path
 
 import httpx
 from websockets.sync.client import connect
@@ -13,15 +14,25 @@ WS = os.getenv("WS_URL", "ws://127.0.0.1:18000/ws/live")
 BBOX = [37, -123, 38.5, -121.5]
 
 
+def record(name, value):
+    directory = os.getenv("TESTFORGE_EVIDENCE_DIR")
+    if directory:
+        path = Path(directory)
+        path.mkdir(parents=True, exist_ok=True)
+        with (path / name).open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps(value) + "\n")
+
+
 def cycle(scenario):
     httpx.post(f"{FIXTURE}/scenario", json={"scenario": scenario}, timeout=5).raise_for_status()
     response = httpx.post(f"{API}/__test/ingest/cycles", json={"scenario_id": scenario}, timeout=30)
     response.raise_for_status()
+    record("cycles.jsonl", response.json())
     assert response.json()["status"] == "succeeded", response.text
     return response.json()
 
 
-def receive(ws, condition, timeout=10):
+def receive(ws, condition, timeout=10, what="expected frame"):
     deadline = time.monotonic() + timeout
     frames = []
     while time.monotonic() < deadline:
@@ -30,9 +41,10 @@ def receive(ws, condition, timeout=10):
         except TimeoutError:
             break
         frames.append(frame)
+        record("ws_frames.jsonl", frame)
         if condition(frame):
             return frame
-    raise AssertionError(f"Expected WebSocket frame not received; observed: {frames!r}")
+    raise AssertionError(f"{what}: WebSocket frame not received; observed: {frames!r}")
 
 
 def subscribe(ws):
@@ -74,7 +86,11 @@ def test_ws_02_enter_update_and_leave():
         while time.time() < update["update"][0][9] + 1:
             time.sleep(0.05)
         cycle("outside")
-        leave = receive(ws, lambda f: f["t"] == "delta" and "abc123" in f["leave"])
+        detail = httpx.get(f"{API}/aircraft/abc123", timeout=5)
+        detail.raise_for_status()
+        record("aircraft_detail.jsonl", detail.json())
+        assert detail.json()["aircraft"]["longitude"] == -120.0
+        leave = receive(ws, lambda f: f["t"] == "delta" and "abc123" in f["leave"], what="WS-02 missing leave")
         assert snapshot["seq"] < enter["seq"] < update["seq"] < leave["seq"]
 
 
