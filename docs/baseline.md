@@ -3,11 +3,12 @@
 - SkyWatch target: release `v0.4.1`, commit `e83e675a66fa7cf8e00a1b28397be1f08a662832`. The original M1 target was `413a8237fdcf9afeaa9e495f9e6e96c720bcf18f`.
 - AgentForge target: `84b1c95aaa98c5855ab627aff141cdf12cac8da4`, selected instead of the guide's older `0e41dcc` because it adds a dedicated TestForge target contract and isolated stack.
 - SkyWatch requires Docker, a TimescaleDB container, Redis, a synthetic provider, and the API. The test uses ports 18000 and 18080 and no real provider credentials.
-- The SkyWatch starter scenario passed locally and in GitHub Actions, with evidence saved in run 42892721167. The AgentForge happy-path spike passed locally; it is not yet included in CI.
+- The SkyWatch starter scenario passed locally and in GitHub Actions, with evidence saved in run 42892721167. The AgentForge happy-path spike passed locally.
 - Licensing for TestForge and redistribution of the target repositories has not yet been decided. No license is implied by this document.
 - M2 has passed its local core, API, isolated integration, timestamp regression, and dependency-outage checks. The SkyWatch fix is merged and tagged, and TestForge pins its release commit; see [risk traceability](m2-risk-traceability.md).
 - M3 adds isolated WebSocket snapshot, delta, reconnect and eviction checks, plus real-browser aircraft details, empty view, and disconnect/recovery journeys. Browser tests stub map tiles and retain traces and screenshots on failure.
 - M4 adds a one-command Phase 1 run, populated anomaly filter coverage, skip/empty-suite detection, and a reproducible intentional regression demonstration; see [M4 regression evidence](m4-regression-demo.md).
+- M5 adds isolated AgentForge positive, negative and worker-kill recovery scenarios, independent target CI jobs, and a concurrent two-target check; see [M5 portability](m5-portability.md).
 
 ## Spike: shared needs
 

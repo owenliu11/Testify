@@ -49,17 +49,14 @@ With `SKYWATCH_DIR` pointing to the pinned SkyWatch checkout and Chromium instal
 
 Run only the controlled demonstration with `bash scripts/demo-regression.sh`. It changes a disposable local clone, confirms WS-02 fails specifically because the leave event is missing, and then restores the source and requires a pass. See [the regression guide](docs/m4-regression-demo.md) for the evidence and remaining reproducibility limits.
 
-## AgentForge spike
+## M5 AgentForge portability
 
-Use an AgentForge checkout at `84b1c95aaa98c5855ab627aff141cdf12cac8da4`, Docker Compose, and the Python environment above. The worker accesses the Docker socket to run the fixture's tests in a disposable container. Ports 18010 and 18011 must be available. Set `AGENTFORGE_DIR` to the absolute checkout path, with no trailing slash:
+Use a clean AgentForge checkout at `84b1c95aaa98c5855ab627aff141cdf12cac8da4` and the Python environment above. The worker uses the Docker socket to run fixture tests in a disposable container. Ports 18010 and 18011 must be available.
 
 ```sh
 export AGENTFORGE_DIR="$HOME/agentforge"
 docker pull python:3.12-alpine
-docker compose -p tf_agentforge_spike -f targets/agentforge/compose.yaml up --build -d --wait --wait-timeout 120
-.venv/bin/python -m pytest tests/agentforge -v --junitxml=reports/agentforge/junit.xml
-docker compose -p tf_agentforge_spike -f targets/agentforge/compose.yaml logs --no-color > reports/agentforge/compose.log
-docker compose -p tf_agentforge_spike -f targets/agentforge/compose.yaml down -v
+bash scripts/run-agentforge-isolated.sh
 ```
 
-The last command deletes only this Compose project's test database. The scenario confirms the agent publishes a report containing the fixture's deliberately failing test; completion does not mean the fixture tests all pass. This spike has been verified locally, but is not yet part of CI.
+Each scenario uses its own database and effects service. The recovery scenario stalls a worker after publishing a report, kills its container, and checks that a replacement completes the run while a duplicate delivery is suppressed. JUnit results, service logs, and recovery evidence are saved under `reports/agentforge/isolated/`. The cleanup removes only the runner's Compose project and its test volume. Set `TF_API_PORT` and `TF_EFFECTS_PORT` to free ports when running concurrent copies. CI runs the full SkyWatch and AgentForge suites independently and also runs both targets together in separate stacks. AgentForge fixture tests deliberately contain a failure; a completed agent run reports that failure rather than hiding it.

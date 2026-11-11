@@ -65,3 +65,93 @@ jobs:
         with:
           name: skywatch-evidence
           path: testforge/reports/skywatch/
+
+  agentforge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: testforge
+      - uses: actions/checkout@v4
+        with:
+          repository: owenliu11/AgentForge
+          ref: 84b1c95aaa98c5855ab627aff141cdf12cac8da4
+          path: agentforge
+          token: ${{ secrets.AGENTFORGE_READ_TOKEN || github.token }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install test dependencies and sandbox image
+        working-directory: testforge
+        run: |
+          python -m pip install .
+          docker pull python:3.12-alpine
+      - name: Run isolated AgentForge scenarios
+        working-directory: testforge
+        env:
+          AGENTFORGE_DIR: ${{ github.workspace }}/agentforge
+          TESTFORGE_PYTHON: python
+        run: bash scripts/run-agentforge-isolated.sh
+      - name: Save evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agentforge-evidence
+          path: testforge/reports/agentforge/
+
+  combined:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      AGENTFORGE_DIR: ${{ github.workspace }}/agentforge
+      SKYWATCH_DIR: ${{ github.workspace }}/skywatch
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: testforge
+      - uses: actions/checkout@v4
+        with:
+          repository: owenliu11/AgentForge
+          ref: 84b1c95aaa98c5855ab627aff141cdf12cac8da4
+          path: agentforge
+          token: ${{ secrets.AGENTFORGE_READ_TOKEN || github.token }}
+      - uses: actions/checkout@v4
+        with:
+          repository: owenliu11/skywatch
+          ref: e83e675a66fa7cf8e00a1b28397be1f08a662832
+          path: skywatch
+          token: ${{ secrets.SKYWATCH_READ_TOKEN || github.token }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        working-directory: testforge
+        run: |
+          python -m pip install .
+          docker pull python:3.12-alpine
+      - name: Start both independent stacks
+        working-directory: testforge
+        run: |
+          docker compose -p tf_combined_sky -f targets/skywatch/compose.yaml up --build -d --wait
+          docker compose -p tf_combined_agent -f targets/agentforge/compose.yaml up --build -d --wait --wait-timeout 120
+      - name: Run both target scenarios
+        working-directory: testforge
+        run: |
+          python -m pytest tests/skywatch/integration/test_ingestion.py tests/agentforge/test_happy_path.py -v --junitxml=reports/combined/junit.xml
+          python scripts/verify-junit.py reports/combined/junit.xml
+      - name: Capture logs and tear down
+        if: always()
+        working-directory: testforge
+        run: |
+          mkdir -p reports/combined
+          docker compose -p tf_combined_sky -f targets/skywatch/compose.yaml logs --no-color > reports/combined/skywatch.log || true
+          docker compose -p tf_combined_agent -f targets/agentforge/compose.yaml logs --no-color > reports/combined/agentforge.log || true
+          docker compose -p tf_combined_sky -f targets/skywatch/compose.yaml down -v --remove-orphans
+          docker compose -p tf_combined_agent -f targets/agentforge/compose.yaml down -v --remove-orphans
+      - name: Save evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: combined-evidence
+          path: testforge/reports/combined/

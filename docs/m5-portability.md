@@ -1,0 +1,9 @@
+# M5 portability and recovery
+
+The target commits are SkyWatch `e83e675a66fa7cf8e00a1b28397be1f08a662832` and AgentForge `84b1c95aaa98c5855ab627aff141cdf12cac8da4`. AgentForge's isolated runner refuses a different or dirty checkout. The two Compose projects have separate databases, services, fixture data, and loopback ports, using synthetic inputs and dummy credentials.
+
+AgentForge coverage includes successful report creation; validation of missing or escaping repositories and invalid step limits; missing run and event IDs; and a bounded run that fails on `MAX_STEPS_EXCEEDED` without publishing. Every isolated scenario uses a fresh project and retains JUnit, service logs and endpoint snapshots.
+
+The recovery test uses a run-scoped worker and a two-second lease. After the mock effects service accepts `report.publish`, the target's fault hook stops the worker before its result is committed. TestForge then sends `SIGKILL` to that specific Docker container, verifies exit status 137 and starts a separate worker for the same run. The run must finish with a new lease generation, a contiguous event stream and a readable report; effects counters must show two deliveries, one applied report, and one suppressed duplicate. The hook runs as a child of the container's init shell because Linux treats PID 1 specially. Recovery evidence records run state, events, counters, worker logs, and container exit state.
+
+CI also starts both pinned targets concurrently in separate projects and runs a positive integration scenario against each. Docker images referenced by tags and package registries remain external dependencies; the source commits are pinned but image digests are not. The Docker socket is needed solely by the disposable AgentForge test worker for its sandbox containers and should only be used in a trusted test environment.

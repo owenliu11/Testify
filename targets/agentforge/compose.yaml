@@ -10,7 +10,7 @@ x-app: &app
     MODEL_SCRIPT: ${AGENTFORGE_DIR}/tests/fixtures/scripts/repo_analysis.yaml
     SANDBOX_IMAGE: python:3.12-alpine
     DEMO_MODE: "false"
-    LEASE_SECONDS: "3"
+    LEASE_SECONDS: "2"
     HEARTBEAT_SECONDS: "1"
     POLL_SECONDS: "0.2"
   volumes:
@@ -26,7 +26,7 @@ services:
     volumes:
       - test_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U agentforge -d agentforge_test"]
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U agentforge -d agentforge_test"]
       interval: 1s
       timeout: 3s
       retries: 30
